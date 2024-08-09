@@ -21,3 +21,12 @@ pub fn print_bold(text: &str) {
         println!("{text}");
     }
 }
+
+pub const CLAP_STYLING: clap::builder::styling::Styles = clap::builder::styling::Styles::styled()
+    .header(crate::style::HEADER)
+    .usage(crate::style::USAGE)
+    .literal(crate::style::LITERAL)
+    .placeholder(crate::style::PLACEHOLDER)
+    .error(crate::style::ERROR)
+    .valid(crate::style::VALID)
+    .invalid(crate::style::INVALID);

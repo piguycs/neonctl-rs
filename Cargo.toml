@@ -4,7 +4,9 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+anstyle = "1.0.8"
 clap = { version = "4.5.13", features = ["derive"] }
+clap-cargo = "0.14.1"
 keyring = { version = "3.0.5", features = ["sync-secret-service"] }
 prettytable-rs = "0.10.0"
 rpassword = "7.3.1"

@@ -44,6 +44,7 @@ pub enum Endpoint {
     ProjectDelete(String),
     /* BRANCH */
     BranchList(String),
+    #[allow(unused)]
     BranchCreate(String),
 }
 

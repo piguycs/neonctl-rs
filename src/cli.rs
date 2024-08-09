@@ -1,9 +1,10 @@
 use clap::{Parser, Subcommand};
 use prettytable::row;
 
-use crate::prelude::*;
+use crate::{prelude::*, region::neon_regions};
 
 #[derive(Parser, Debug)]
+#[command(styles = CLAP_STYLING)]
 pub struct Cli {
     #[command(subcommand)]
     pub command: Command,
@@ -12,16 +13,22 @@ pub struct Cli {
 #[derive(Subcommand, Debug)]
 pub enum Command {
     Me,
+    #[command(alias = "project")]
     Projects {
         #[command(subcommand)]
         opts: ProjectCommand,
     },
+    #[command(alias = "branch")]
     Branches {
         #[command(subcommand)]
         opts: BranchCommand,
     },
     #[command(alias = "cs")]
     ConnectionString,
+
+    /// Display neondb regions and their ping from your machine
+    #[command(alias = "region")]
+    Regions,
 }
 
 #[derive(Subcommand, Debug)]
@@ -37,13 +44,13 @@ pub enum ProjectCommand {
         #[arg()]
         id: String,
         #[arg(long, short)]
-        name: Option<String>,
+        name: bool,
     },
     Delete {
         #[arg()]
         id: String,
         #[arg(long, short)]
-        name: Option<String>,
+        name: bool,
     },
 }
 
@@ -117,8 +124,12 @@ impl Command {
                     print_table(row!["Connection URI"], data);
                 }
                 ProjectCommand::Get { id, name } => {
-                    let res = api.get_project(id.to_owned())?;
-                    let project = res.project;
+                    let project = if *name {
+                        api.get_project_by_name(id.to_owned())?
+                    } else {
+                        api.get_project(id.to_owned())?
+                    };
+
                     print_table(
                         row!["Id", "Name", "Region Id", "Created At"],
                         vec![row![
@@ -130,8 +141,15 @@ impl Command {
                     );
                 }
                 ProjectCommand::Delete { id, name } => {
-                    let res = api.delete_project(id.to_owned())?;
-                    let project = res.project;
+                    let id = if *name {
+                        let project = api.get_project_by_name(id.to_owned())?;
+                        project.id
+                    } else {
+                        id.to_owned()
+                    };
+
+                    let project = api.delete_project(id)?;
+
                     print_table(
                         row!["Id", "Name", "Region Id", "Created At"],
                         vec![row![
@@ -177,6 +195,21 @@ impl Command {
                     )
                 }
             },
+            Command::Regions => {
+                let mut regions: Vec<_> = neon_regions()
+                    .into_iter()
+                    .filter_map(|handle| handle.join().ok())
+                    .collect();
+
+                regions.sort_by(|(_, time_a), (_, time_b)| time_a.cmp(time_b));
+
+                let data: Vec<_> = regions
+                    .iter()
+                    .map(|(region, time)| row![region, f!("{time}ms")])
+                    .collect();
+
+                print_table(row!["Region", "Ping"], data);
+            }
         }
 
         Ok(())

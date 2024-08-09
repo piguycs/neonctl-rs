@@ -1,10 +1,8 @@
-use std::{sync::Arc, thread, time};
-
 use serde::{Deserialize, Serialize};
 use ureq::json;
 
 use super::*;
-use crate::prelude::*;
+use crate::{prelude::*, region::neon_regions};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Projects {
@@ -19,7 +17,7 @@ pub struct CreatedProject {
 
 // TODO: give it a meaningful name
 #[derive(Debug, Serialize, Deserialize)]
-pub struct DeletedProject {
+struct RespProject {
     pub project: Project,
 }
 
@@ -37,38 +35,18 @@ pub struct ConnectionUris {
 }
 
 fn nearest_region() -> String {
-    let mut handles = vec![];
+    let mut regions: Vec<_> = neon_regions()
+        .into_iter()
+        .filter_map(|handle| handle.join().ok())
+        .collect();
 
-    for region in NEON_REGIONS {
-        let region = Arc::new(region);
-        let handle = thread::spawn(move || {
-            let endpoint = f!("http://dynamodb.{region}.amazonaws.com");
-            let start = time::Instant::now();
-            ureq::get(&endpoint).call().unwrap();
+    regions.sort_by(|(_, time_a), (_, time_b)| time_a.cmp(time_b));
 
-            let time = start.elapsed();
-
-            (f!("aws-{region}"), time.as_millis())
-        });
-
-        handles.push(handle);
-    }
-
-    let mut lowest_region = String::new();
-    let mut lowest = -1;
-    for handle in handles {
-        let (region, time) = handle.join().unwrap();
-        let time = time as i128;
-
-        if lowest == -1 {
-            lowest = time;
-        } else if lowest > time {
-            lowest = time;
-            lowest_region = region;
-        }
-    }
-
-    lowest_region
+    regions
+        .into_iter()
+        .map(|(region, _)| region)
+        .next()
+        .expect("could not read any neon regions")
 }
 
 impl Api {
@@ -79,16 +57,25 @@ impl Api {
 
     // same schema as deleted project
     // TODO: Rename the struct
-    pub fn get_project(&self, id: String) -> Result<DeletedProject> {
-        let res: DeletedProject = self.call(ureq::get(&Endpoint::Project(id).to_string()))?;
-        Ok(res)
+    pub fn get_project(&self, id: String) -> Result<Project> {
+        let res: RespProject = self.call(ureq::get(&Endpoint::Project(id).to_string()))?;
+        Ok(res.project)
     }
 
-    pub fn delete_project(&self, id: String) -> Result<DeletedProject> {
-        let res: DeletedProject =
-            self.call(ureq::delete(&Endpoint::ProjectDelete(id).to_string()))?;
+    pub fn get_project_by_name(&self, name: String) -> Result<Project> {
+        for project in self.get_project_list()?.projects {
+            if project.name == name {
+                return Ok(project);
+            }
+        }
 
-        Ok(res)
+        Err(f!("No project with name {name} found").into())
+    }
+
+    pub fn delete_project(&self, id: String) -> Result<Project> {
+        let res: RespProject = self.call(ureq::delete(&Endpoint::ProjectDelete(id).to_string()))?;
+
+        Ok(res.project)
     }
 
     pub fn create_project(

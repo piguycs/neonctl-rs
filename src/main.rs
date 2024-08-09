@@ -1,6 +1,8 @@
 mod api;
 mod cli;
 mod prelude;
+mod region;
+mod style;
 mod table;
 
 use api::Api;

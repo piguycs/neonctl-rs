@@ -6,6 +6,8 @@ neonctl is slow. Later I realised that their api also very slow, but the sunk co
 
 ## TODO
 
+- [ ] EXTRA: Region ms
+
 - [ ] neon paid account so I can actually test this :(
 
 - [ ] UNIT TESTS (IMPORTANT!!!)
@@ -29,8 +31,9 @@ neonctl is slow. Later I realised that their api also very slow, but the sunk co
 - [ ] ------ OPTS: --cu
 - [ ] ------ OPTS: --psql
 - [x] -- delete
-- [ ] -- -- EXTRA: delete by specifying name
+- [x] -- -- EXTRA: delete by specifying name
 - [x] -- get id
+- [x] -- get with name
 - [ ] -- update id
 - [ ] -- shared with me
 

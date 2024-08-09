@@ -52,3 +52,17 @@ impl Api {
         Ok(branches)
     }
 }
+
+#[test]
+fn deserialise() {
+    let key = std::env::var("API_KEY").unwrap();
+    let res = ureq::get(&Endpoint::BranchList("invalid".to_string()).to_string())
+        .set("Authorization", &format!("Bearer {}", key))
+        .call();
+
+    // TODO: first create a branch, then delete it
+    // so for now, we just check if invalid id returns 404
+    // very bad test, the things I do because project limit is 1 :(
+    // maybe I can self host neondb for testing? but idk if the api comes with it or just psql
+    assert!(res.is_err());
+}

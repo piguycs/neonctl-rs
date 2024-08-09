@@ -2,7 +2,9 @@ mod branch;
 mod project;
 mod user;
 
-use std::{fmt::Display, io::Write};
+use std::fmt::Display;
+
+use inquire::{Password, PasswordDisplayMode};
 
 use crate::prelude::*;
 
@@ -13,9 +15,12 @@ fn get_api_key() -> Result<String> {
         Ok(key) => key,
         Err(keyring::Error::NoEntry) => {
             println!("Generate a new key at https://console.neon.tech/app/settings/api-keys");
-            print!("api key> ");
-            std::io::stdout().flush()?;
-            let key = rpassword::read_password()?;
+            let pask = Password::new("Enter API key (CTRL+R to reveal):")
+                .without_confirmation()
+                .with_display_toggle_enabled()
+                .with_display_mode(PasswordDisplayMode::Masked);
+
+            let key = pask.prompt()?;
 
             entry.set_password(&key)?;
 

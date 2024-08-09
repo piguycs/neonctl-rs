@@ -1,7 +1,7 @@
 use clap::{Parser, Subcommand};
-use prettytable::{format, row, Table};
+use prettytable::row;
 
-use crate::{api::Api, prelude::*, table::print_table};
+use crate::prelude::*;
 
 #[derive(Parser, Debug)]
 pub struct Cli {
@@ -36,15 +36,24 @@ pub enum ProjectCommand {
     Get {
         #[arg()]
         id: String,
+        #[arg(long, short)]
+        name: Option<String>,
     },
     Delete {
         #[arg()]
         id: String,
+        #[arg(long, short)]
+        name: Option<String>,
     },
 }
 
 #[derive(Subcommand, Debug)]
-pub enum BranchCommand {}
+pub enum BranchCommand {
+    List {
+        #[arg()]
+        id: Option<String>,
+    },
+}
 
 impl Command {
     pub fn run(&self, api: Api) -> Result<()> {
@@ -61,7 +70,7 @@ impl Command {
                 ProjectCommand::List => {
                     let res = api.get_project_list()?;
 
-                    println!("Projects");
+                    print_bold("Projects");
 
                     let data: Vec<_> = res
                         .projects
@@ -76,9 +85,13 @@ impl Command {
                         })
                         .collect();
 
-                    print_table(row!["Id", "Name", "Region Id", "Created At"], data);
+                    if !data.is_empty() {
+                        print_table(row!["Id", "Name", "Region Id", "Created At"], data);
+                    } else {
+                        println!("No projects found on your account\n");
+                    }
 
-                    println!("Shared with me (TODO)");
+                    print_bold("Shared with me (TODO)");
                 }
                 ProjectCommand::Create { name, region_id } => {
                     let res = api
@@ -103,7 +116,7 @@ impl Command {
 
                     print_table(row!["Connection URI"], data);
                 }
-                ProjectCommand::Get { id } => {
+                ProjectCommand::Get { id, name } => {
                     let res = api.get_project(id.to_owned())?;
                     let project = res.project;
                     print_table(
@@ -116,7 +129,7 @@ impl Command {
                         ]],
                     );
                 }
-                ProjectCommand::Delete { id } => {
+                ProjectCommand::Delete { id, name } => {
                     let res = api.delete_project(id.to_owned())?;
                     let project = res.project;
                     print_table(
@@ -133,7 +146,37 @@ impl Command {
             Command::ConnectionString => {
                 todo!("to be done")
             }
-            Command::Branches { opts } => (),
+            Command::Branches { opts } => match opts {
+                BranchCommand::List { id } => {
+                    let branches = api.get_branch_list(id.to_owned())?;
+
+                    let data: Vec<_> = branches
+                        .iter()
+                        .map(|branch| {
+                            row![
+                                branch.id,
+                                branch.name,
+                                branch.primary,
+                                branch.default,
+                                branch.created_at,
+                                branch.updated_at
+                            ]
+                        })
+                        .collect();
+
+                    print_table(
+                        row![
+                            "Id",
+                            "Name",
+                            "Primary",
+                            "Default",
+                            "Created At",
+                            "Updated At"
+                        ],
+                        data,
+                    )
+                }
+            },
         }
 
         Ok(())

@@ -58,7 +58,7 @@ impl Endpoint {
             Endpoint::ProjectList | Endpoint::ProjectCreate => "/projects",
             Endpoint::ProjectDelete(id) | Endpoint::Project(id) => &f!("/projects/{id}"),
 
-            Endpoint::BranchList(id) | Endpoint::BranchCreate(id) => &f!("projects/{id}/branches"),
+            Endpoint::BranchList(id) | Endpoint::BranchCreate(id) => &f!("/projects/{id}/branches"),
         };
 
         endpoint.to_string()

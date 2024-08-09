@@ -1,3 +1,9 @@
+# Why?
+
+neonctl is slow. Later I realised that their api also very slow part, but the sunk cost fallacy will keep me going.
+
+![](./assets/hyperfine.png)
+
 ## TODO
 
 - [ ] neon paid account so I can actually test this :(

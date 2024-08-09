@@ -5,7 +5,7 @@ use super::*;
 use crate::{prelude::*, region::neon_regions};
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct Projects {
+struct Projects {
     pub projects: Vec<Project>,
 }
 
@@ -29,6 +29,12 @@ pub struct Project {
     pub created_at: String,
 }
 
+impl Display for Project {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.name)
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ConnectionUris {
     pub connection_uri: String,
@@ -50,9 +56,9 @@ fn nearest_region() -> String {
 }
 
 impl Api {
-    pub fn get_project_list(&self) -> Result<Projects> {
+    pub fn get_project_list(&self) -> Result<Vec<Project>> {
         let res: Projects = self.call(ureq::get(&Endpoint::ProjectList.to_string()))?;
-        Ok(res)
+        Ok(res.projects)
     }
 
     // same schema as deleted project
@@ -63,7 +69,7 @@ impl Api {
     }
 
     pub fn get_project_by_name(&self, name: String) -> Result<Project> {
-        for project in self.get_project_list()?.projects {
+        for project in self.get_project_list()? {
             if project.name == name {
                 return Ok(project);
             }

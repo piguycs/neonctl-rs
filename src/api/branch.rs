@@ -36,7 +36,7 @@ impl Api {
                     .branches
             }
             None => {
-                let projects = self.get_project_list()?.projects;
+                let projects = self.get_project_list()?;
 
                 projects
                     .into_iter()

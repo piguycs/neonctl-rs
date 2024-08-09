@@ -1,5 +1,6 @@
 mod api;
 mod cli;
+mod commands;
 mod prelude;
 mod region;
 mod style;

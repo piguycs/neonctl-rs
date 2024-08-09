@@ -1,9 +1,10 @@
 use clap::{Parser, Subcommand};
 use prettytable::row;
 
-use crate::{prelude::*, region::neon_regions};
+use crate::{commands::psql::psql_command, prelude::*, region::neon_regions};
 
 #[derive(Parser, Debug)]
+#[command(version, about)]
 #[command(styles = CLAP_STYLING)]
 pub struct Cli {
     #[command(subcommand)]
@@ -29,6 +30,10 @@ pub enum Command {
     /// Display neondb regions and their ping from your machine
     #[command(alias = "region")]
     Regions,
+
+    /// Connect to your database using psql
+    #[command()]
+    Psql,
 }
 
 #[derive(Subcommand, Debug)]
@@ -80,7 +85,6 @@ impl Command {
                     print_bold("Projects");
 
                     let data: Vec<_> = res
-                        .projects
                         .iter()
                         .map(|project| {
                             row![
@@ -210,6 +214,7 @@ impl Command {
 
                 print_table(row!["Region", "Ping"], data);
             }
+            Command::Psql => psql_command(api)?,
         }
 
         Ok(())

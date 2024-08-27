@@ -1,4 +1,5 @@
 mod branch;
+mod connection_string;
 mod project;
 mod user;
 
@@ -51,6 +52,9 @@ pub enum Endpoint {
     BranchList(String),
     #[allow(unused)]
     BranchCreate(String),
+
+    /* IDK */
+    ConnectionString(String),
 }
 
 impl Endpoint {
@@ -59,15 +63,15 @@ impl Endpoint {
     }
 
     pub fn endpoint(&self) -> String {
-        let endpoint = match self {
-            Endpoint::Me => "/users/me",
-            Endpoint::ProjectList | Endpoint::ProjectCreate => "/projects",
-            Endpoint::ProjectDelete(id) | Endpoint::Project(id) => &f!("/projects/{id}"),
+        match self {
+            Endpoint::Me => "/users/me".to_string(),
+            Endpoint::ProjectList | Endpoint::ProjectCreate => "/projects".to_string(),
+            Endpoint::ProjectDelete(id) | Endpoint::Project(id) => f!("/projects/{id}"),
 
-            Endpoint::BranchList(id) | Endpoint::BranchCreate(id) => &f!("/projects/{id}/branches"),
-        };
+            Endpoint::BranchList(id) | Endpoint::BranchCreate(id) => f!("/projects/{id}/branches"),
 
-        endpoint.to_string()
+            Endpoint::ConnectionString(id) => f!("/projects/{id}/connection_uri"),
+        }
     }
 }
 

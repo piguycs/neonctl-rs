@@ -1,7 +1,9 @@
+use std::process;
+
 use clap::{Parser, Subcommand};
 use prettytable::row;
 
-use crate::{commands::psql::psql_command, prelude::*, region::neon_regions};
+use crate::{commands::psql::get_connection_string, prelude::*, region::neon_regions};
 
 #[derive(Parser, Debug)]
 #[command(version, about)]
@@ -165,9 +167,6 @@ impl Command {
                     );
                 }
             },
-            Command::ConnectionString => {
-                todo!("to be done")
-            }
             Command::Branches { opts } => match opts {
                 BranchCommand::List { id } => {
                     let branches = api.get_branch_list(id.to_owned())?;
@@ -214,7 +213,18 @@ impl Command {
 
                 print_table(row!["Region", "Ping"], data);
             }
-            Command::Psql => psql_command(api)?,
+            Command::ConnectionString => {
+                println!("{}", get_connection_string(api)?);
+            }
+            Command::Psql => {
+                let cs = get_connection_string(api)?;
+
+                let ecode = process::Command::new("psql").arg(cs).spawn()?.wait()?;
+
+                if !ecode.success() {
+                    return Err("Could not run psql".into());
+                }
+            }
         }
 
         Ok(())

@@ -17,7 +17,18 @@ fn main() -> Result<()> {
 
     let opts = Cli::parse();
 
-    opts.command.run(api)?;
+    if let Err(error) = opts.command.run(api) {
+        if let Some(mut t) = term::stderr() {
+            let _ = t.attr(term::Attr::Bold);
+            let _ = t.bg(term::color::RED);
+            let _ = write!(t, " ERROR ");
+            let _ = t.reset();
+        } else {
+            eprint!(" ERROR ");
+        }
+
+        eprintln!(" {error}");
+    }
 
     Ok(())
 }

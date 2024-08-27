@@ -1,18 +1,24 @@
-use inquire::Select;
+use inquire::{Confirm, Select};
 
 use crate::prelude::*;
 
-// 1. Select a project
-// 2. Select a branch on that project
-// 3. Use project id and branch id to get list of roles
-// 4. Use project id and branch id to get list of databases
-// 5. Get the connection uri
-pub fn psql_command(api: Api) -> Result<()> {
+pub fn get_connection_string(api: Api) -> Result<String> {
     let projects = api.get_project_list()?;
-
     let select = Select::new("What project do you wanna connect to?", projects);
 
-    let _ = select.prompt()?;
+    let project = select.prompt()?;
 
-    todo!()
+    let branches = api.get_branch_list(Some(project.id.clone()))?;
+    let select = Select::new("What branch do you wanna connect to?", branches);
+
+    let branch = select.prompt()?;
+
+    let database = "neondb"; // TODO: dont hardcode lmao
+    let role = "neondb_owner"; // TODO: dont hardcode lmao
+
+    let pooled = Confirm::new("Do you want a pooled connection?").prompt()?;
+
+    let cs = api.get_connection_string(project.id, &branch.id, database, role, pooled)?;
+
+    Ok(cs)
 }

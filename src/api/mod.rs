@@ -9,6 +9,8 @@ use inquire::{Password, PasswordDisplayMode};
 
 use crate::prelude::*;
 
+pub const NEON_ENDPOINT: &str = "https://console.neon.tech/api/v2";
+
 fn get_api_key() -> Result<String> {
     let entry = keyring::Entry::new("neonctl-rs", "api")?;
 
@@ -50,16 +52,15 @@ pub enum Endpoint {
     ProjectDelete(String),
     /* BRANCH */
     BranchList(String),
-    #[allow(unused)]
     BranchCreate(String),
 
-    /* IDK */
+    /* GENERAL */
     ConnectionString(String),
 }
 
 impl Endpoint {
     pub fn get_base() -> String {
-        "https://console.neon.tech/api/v2".to_string()
+        NEON_ENDPOINT.to_string()
     }
 
     pub fn endpoint(&self) -> String {

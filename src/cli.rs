@@ -1,7 +1,8 @@
 use std::process;
 
-use clap::{Parser, Subcommand};
+use clap::{Parser, Subcommand, ValueEnum};
 use prettytable::row;
+use serde::Serialize;
 
 use crate::{commands::psql::get_connection_string, prelude::*, region::neon_regions};
 
@@ -67,6 +68,25 @@ pub enum BranchCommand {
         #[arg()]
         id: Option<String>,
     },
+    Create {
+        #[arg(short, long)]
+        id: Option<String>,
+        #[arg(short, long)]
+        name: Option<String>,
+        #[arg(short, long)]
+        parent: Option<String>,
+        #[arg(short, long, default_value = "asshole")]
+        compute: Option<bool>,
+        #[arg(short, long, default_value = "read-write")]
+        branch_type: BranchType,
+    },
+}
+
+#[derive(ValueEnum, Debug, Default, Clone, Serialize)]
+pub enum BranchType {
+    ReadOnly,
+    #[default]
+    ReadWrite,
 }
 
 impl Command {
@@ -196,6 +216,11 @@ impl Command {
                         ],
                         data,
                     )
+                }
+                BranchCommand::Create { branch_type, .. } => {
+                    if let BranchType::ReadWrite = branch_type {
+                        println!("asswide")
+                    }
                 }
             },
             Command::Regions => {

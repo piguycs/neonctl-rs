@@ -1,6 +1,15 @@
 # Why?
 
+
 neonctl is slow. Later I realised that their api also very slow, but the sunk cost fallacy will keep me going.
+
+## haiatus
+
+I need to use neon for a project, and the free tier only allows one project. So
+this has to go on a haiatus, as I wont be able to test it without affecting my
+project. I might still add features to this, as I plan on using neonctl-rs instead
+of the js version of neonctl, or I might decide that it is worth it to upgrade
+to a higher tier just to continue working on an side-project.
 
 ![](./assets/hyperfine.png)
 

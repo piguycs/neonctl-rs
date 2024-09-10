@@ -4,6 +4,12 @@ use crate::prelude::*;
 
 pub fn get_connection_string(api: Api) -> Result<String> {
     let projects = api.get_project_list()?;
+
+    if projects.is_empty() {
+        // TODO: maybe add an enum for errors?
+        return Err("No projects found on your account".into());
+    }
+
     let select = Select::new("What project do you wanna connect to?", projects);
 
     let project = select.prompt()?;

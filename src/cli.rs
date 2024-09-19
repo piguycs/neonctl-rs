@@ -75,7 +75,7 @@ pub enum BranchCommand {
         name: Option<String>,
         #[arg(short, long)]
         parent: Option<String>,
-        #[arg(short, long, default_value = "asshole")]
+        #[arg(short, long)]
         compute: Option<bool>,
         #[arg(short, long, default_value = "read-write")]
         branch_type: BranchType,
